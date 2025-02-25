@@ -42,13 +42,12 @@ public sealed class SecretKeyAuthenticationHandler(
             return Task.FromResult( AuthenticateResult.Fail( "Invalid Token" ) );
         }
 
+        var claims = options.CurrentValue.CustomClaimsFactory?.Invoke( nameIdentifier ).ToList() ?? [];
+
+        claims.Add( new Claim( ClaimTypes.NameIdentifier, nameIdentifier ) );
+
         var principal = new ClaimsPrincipal(
-            new ClaimsIdentity(
-                [
-                    new( ClaimTypes.NameIdentifier, nameIdentifier )
-                ],
-                Scheme.Name
-            )
+            new ClaimsIdentity( claims, Scheme.Name )
         );
         var ticket = new AuthenticationTicket( principal, Scheme.Name );
 
